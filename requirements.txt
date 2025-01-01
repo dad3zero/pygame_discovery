@@ -1,2 +1,2 @@
-ipython>=8.27,<8.28
+ipython>=8.27
 pygame>=2.6,<2.7
