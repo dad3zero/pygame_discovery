@@ -1,4 +1,3 @@
-# Example file showing a basic pygame "game loop"
 import random
 import pygame
 
@@ -20,6 +19,22 @@ class Ball:
     def collide(self, other):
         return self.rect.colliderect(other)
 
+class Hero:
+    def __init__(self, image):
+        self.image = pygame.image.load(image).convert_alpha()
+        self.rect = self.image.get_rect()
+        self.rect.topleft = (270, 380)
+        self._speed = 10
+
+    def move_right(self):
+        if self.rect.right <= 630:
+            self.rect = self.rect.move(self._speed, 0)
+
+    def move_left(self):
+        if self.rect.left >= 10:
+            self.rect = self.rect.move(-self._speed, 0)
+
+
 # pygame setup
 pygame.init()
 screen = pygame.display.set_mode((640, 480))
@@ -28,15 +43,11 @@ clock = pygame.time.Clock()
 background = pygame.image.load(settings.ASSETS_PATH / 'background.jpg').convert()
 screen.blit(background, (0, 0))
 
-hero = pygame.image.load(settings.ASSETS_PATH / 'Perso.png').convert_alpha()
-hero_rect = hero.get_rect()
-hero_rect.topleft = (270, 380)
+hero = Hero(settings.ASSETS_PATH / 'Perso.png')
 balls = []
 
 running = True
 dt = 0 # Fort Delta_Time
-
-player_pos = pygame.Vector2(screen.get_width() / 2, screen.get_height() / 2)
 
 while running:
     if len(balls) < 10 and random.randint(1, 500) <= 10:
@@ -47,16 +58,10 @@ while running:
             running = False
 
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_z]:
-        player_pos.y -= 300 * dt
-    if keys[pygame.K_s]:
-        player_pos.y += 300 * dt
     if keys[pygame.K_q]:
-        if hero_rect.left >= 10:
-            hero_rect = hero_rect.move(-10, 0)
+        hero.move_left()
     if keys[pygame.K_d]:
-        if hero_rect.right <= 630:
-            hero_rect = hero_rect.move(10, 0)
+        hero.move_right()
 
     # flip() the display to put your work on screen
     screen.blit(background, (0, 0))
@@ -66,13 +71,13 @@ while running:
             balls.remove(ball)
 
         else:
-            if ball.collide(hero_rect):
+            if ball.collide(hero.rect):
                 running = False
                 print("hit !!!")
 
             ball.display(screen)
 
-    screen.blit(hero, hero_rect)
+    screen.blit(hero.image, hero.rect)
     pygame.display.flip()
     pygame.display.update()
 
