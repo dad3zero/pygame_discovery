@@ -26,6 +26,9 @@ class Hero:
         self.rect.topleft = (270, 380)
         self._speed = 10
 
+    def display(self, window):
+        window.blit(self.image, self.rect)
+
     def move_right(self):
         if self.rect.right <= 630:
             self.rect = self.rect.move(self._speed, 0)
@@ -77,7 +80,8 @@ while running:
 
             ball.display(screen)
 
-    screen.blit(hero.image, hero.rect)
+    hero.display(screen)
+    
     pygame.display.flip()
     pygame.display.update()
 
