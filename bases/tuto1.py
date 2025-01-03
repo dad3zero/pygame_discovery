@@ -3,6 +3,29 @@ import pygame
 
 from bases import settings
 
+class Scene:
+    def __init__(self, bg_img_path=None, ball_img_path=None):
+        self.background = pygame.image.load(bg_img_path).convert()
+        self.ball_img_path = ball_img_path
+        self.balls = []
+
+    def display(self, screen):
+        screen.blit(self.background, (0, 0))
+        if len(self.balls) < 10 and random.randint(1, 500) <= 10:
+            self.balls.append(Ball(self.ball_img_path, (random.randint(25, 455), -25)))
+
+        for ball in self.balls:
+            ball.move()
+            if ball.rect.top >= 480:
+                self.balls.remove(ball)
+
+            else:
+                if ball.collide(hero.rect):
+                    print("hit !!!")
+
+                ball.display(screen)
+
+
 class Ball:
     def __init__(self, image, center):
         self.image = pygame.image.load(image).convert_alpha()
@@ -43,19 +66,15 @@ pygame.init()
 screen = pygame.display.set_mode((640, 480))
 clock = pygame.time.Clock()
 
-background = pygame.image.load(settings.ASSETS_PATH / 'background.jpg').convert()
-screen.blit(background, (0, 0))
-
+scene = Scene(settings.ASSETS_PATH / 'background.jpg', settings.ASSETS_PATH / 'golfBall.png')
 hero = Hero(settings.ASSETS_PATH / 'Perso.png')
-balls = []
+
+scene.display(screen)
 
 running = True
 dt = 0 # Fort Delta_Time
 
 while running:
-    if len(balls) < 10 and random.randint(1, 500) <= 10:
-        balls.append(Ball(settings.ASSETS_PATH / 'golfBall.png', (random.randint(25, 455), -25)))
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
@@ -66,24 +85,10 @@ while running:
     if keys[pygame.K_d]:
         hero.move_right()
 
-    # flip() the display to put your work on screen
-    screen.blit(background, (0, 0))
-    for ball in balls:
-        ball.move()
-        if ball.rect.top >= 480:
-            balls.remove(ball)
-
-        else:
-            if ball.collide(hero.rect):
-                running = False
-                print("hit !!!")
-
-            ball.display(screen)
-
+    scene.display(screen)
     hero.display(screen)
     
     pygame.display.flip()
-    pygame.display.update()
 
     dt = clock.tick(60) / 1000  # limits FPS to 60
 
