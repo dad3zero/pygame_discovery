@@ -4,23 +4,33 @@ import pygame
 from bases import settings
 
 class Scene:
-    def __init__(self, bg_img_path=None, ball_img_path=None):
-        self.background = pygame.image.load(bg_img_path).convert()
-        self.ball_img_path = ball_img_path
-        self.balls = []
+    def __init__(self, bg_img_path=None):
+        self._background = pygame.image.load(bg_img_path).convert()
+
+        self._ball_img_path = settings.ASSETS_PATH / 'golfBall.png'
+        self._balls = []
+        self._hero = Hero(settings.ASSETS_PATH / 'Perso.png')
+
 
     def display(self, screen):
-        screen.blit(self.background, (0, 0))
-        if len(self.balls) < 10 and random.randint(1, 500) <= 10:
-            self.balls.append(Ball(self.ball_img_path, (random.randint(25, 455), -25)))
+        screen.blit(self._background, (0, 0))
+        if len(self._balls) < 10 and random.randint(1, 500) <= 10:
+            self._balls.append(Ball(self._ball_img_path, (random.randint(25, 455), -25)))
 
-        for ball in self.balls:
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_q]:
+            self._hero.move_left()
+        if keys[pygame.K_d]:
+            self._hero.move_right()
+
+        self._hero.display(screen)
+        for ball in self._balls:
             ball.move()
             if ball.rect.top >= 480:
-                self.balls.remove(ball)
+                self._balls.remove(ball)
 
             else:
-                if ball.collide(hero.rect):
+                if ball.collide(self._hero.rect):
                     print("hit !!!")
 
                 ball.display(screen)
@@ -42,6 +52,7 @@ class Ball:
     def collide(self, other):
         return self.rect.colliderect(other)
 
+
 class Hero:
     def __init__(self, image):
         self.image = pygame.image.load(image).convert_alpha()
@@ -61,36 +72,36 @@ class Hero:
             self.rect = self.rect.move(-self._speed, 0)
 
 
-# pygame setup
-pygame.init()
-screen = pygame.display.set_mode((640, 480))
-clock = pygame.time.Clock()
+class App:
+    def __init__(self):
+        # pygame setup
+        pygame.init()
+        self.screen = pygame.display.set_mode((640, 480))
+        self.clock = pygame.time.Clock()
+        self.running = True
+        self.dt = 0.0
 
-scene = Scene(settings.ASSETS_PATH / 'background.jpg', settings.ASSETS_PATH / 'golfBall.png')
-hero = Hero(settings.ASSETS_PATH / 'Perso.png')
+        self.scene = None
 
-scene.display(screen)
+    def add_scene(self, scene):
+        self.scene = scene
 
-running = True
-dt = 0 # Fort Delta_Time
+    def run(self):
+        while self.running:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+            self.scene.display(self.screen)
 
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_q]:
-        hero.move_left()
-    if keys[pygame.K_d]:
-        hero.move_right()
+            pygame.display.flip()
+            self.dt = self.clock.tick(60) / 1000  # Limit FPS to 60
 
-    scene.display(screen)
-    hero.display(screen)
-    
-    pygame.display.flip()
-
-    dt = clock.tick(60) / 1000  # limits FPS to 60
+        pygame.quit()
 
 
-pygame.quit()
+if __name__ == "__main__":
+    app = App()
+    app.add_scene(Scene(settings.ASSETS_PATH / 'background.jpg'))
+
+    app.run()
